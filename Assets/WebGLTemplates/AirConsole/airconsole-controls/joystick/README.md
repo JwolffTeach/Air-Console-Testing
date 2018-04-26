@@ -1,5 +1,5 @@
 # Joystick
-An analogue absolutely placed joystick.
+An analogue relative joystick.
 
 ## Example
 
@@ -15,7 +15,7 @@ You need to place & size the joystick explicitly. It needs to have position **re
 For example:
 ```html
 <style type=text/css>
-  #your-joystick {
+  #your-button {
     position: absolute;
     left: 0px;
     top: 0px;

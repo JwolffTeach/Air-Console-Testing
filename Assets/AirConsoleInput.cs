@@ -6,17 +6,16 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using UnityStandardAssets._2D;
 
 [Serializable]
 public class AirConsoleInput : MonoBehaviour {
-    public bool grab;
-    public bool jump;
-    public float joystickX;
-    public float joystickY;
 
-    public Text debugText;
-    public string json;
-    JObject jObject;
+    public float m_Horizontal;
+
+    [SerializeField] Platformer2DUserControl[] characterController;
+
+
 
     void OnEnable() {
         AirConsole.instance.onMessage += OnMessage;
@@ -27,65 +26,34 @@ public class AirConsoleInput : MonoBehaviour {
     }
 
     void OnMessage(int from, JToken data) {
-        print(data);
-        JObject jo = data.Value<JObject>();
-        jump = (jo.Property("jump") != null);
-        if (jump) {
-            if ((bool)(data["jump"]["pressed"])){ // Make sure jump pressed is true
-                // Do Jump Stuff
-            }
-        }
+        // Parse the message data.
+        string element = (string)data["element"];
+        string direction = (string)data["data"]["direction"];
+        bool pressed = (bool)data["data"]["pressed"];
+        HorizontalMovement(from, direction, pressed);
+    }
 
-        grab = (jo.Property("grab") != null);
-        if (grab) {
-            if ((bool)(data["grab"]["pressed"])) { // Make sure grab pressed is true
-                // Do Grab Stuff
+    private void HorizontalMovement(int from, string direction, bool pressed) {
+        // Decide how to move horizontally.
+        if (pressed == true) {
+            if (direction == "right") {
+                m_Horizontal = 1;
             }
-        }
-
-        bool joyStickMoving = (jo.Property("joystick-left") != null);
-        if (joyStickMoving) {
-            if((bool)(data["joystick-left"]["pressed"])) { // Make sure joystick is pressed
-                joystickX = data["joystick-left"]["message"]["x"].Value<float>();
-                joystickY = data["joystick-left"]["message"]["y"].Value<float>();
+            else if (direction == "left") {
+                m_Horizontal = -1;
             }
-            else {
-                joystickX = 0f;
-                joystickY = 0f;
-            }
+            characterController[from - 1].SetHorizontal(m_Horizontal);
         }
-
-        /*
-        print(data.ToString());
-        JObject jo = data.Value<JObject>();
-        List<string> keys = jo.Properties().Select(print => print.Name).ToList();
-        if (keys.Contains("jump")) {
-            JObject jumpJson = data["jump"].Value<JObject>();
-            List<string> jumpKeys = jumpJson.Properties().Select(print => print.Name).ToList();
-            if (jumpKeys.Contains("pressed")) {
-                JObject pressedJson = data["jump"]["pressed"].Value<JObject>();
-                List<string> pressedKeys = pressedJson.Properties().Select(print => print.Name).ToList();
-                if (pressedKeys.Contains("true")) {
-                    jump = !jump;
-                }
-            }
+        else {
+            characterController[from - 1].SlowDown();
         }
-        else if (keys.Contains("grab")) {
-            print("Grabbed...");
-        }
-        */
-
-        //JObject grab = data[""].Value<JObject>();
-        print("Success.");
-        //print(data["jump"].ToString());
-        //print(data["jump"]["pressed"].ToString());
-        /*if ((string)data["jump"] != null){
-            print(data["jump"].Value<string>("pressed"));
-        }*/
     }
 
     private void Update() {
-        debugText.text = "Jumping: " + jump + " :: Grabbing: " + grab;
-        debugText.text += "\nx: " + joystickX + " y: " + joystickY;
+
+    }
+
+    private void FixedUpdate() {
+
     }
 }
